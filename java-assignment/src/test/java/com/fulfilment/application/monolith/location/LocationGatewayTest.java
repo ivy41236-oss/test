@@ -16,7 +16,7 @@ public class LocationGatewayTest {
     Location location = locationGateway.resolveByIdentifier("ZWOLLE-001");
 
     // then
-    assertEquals(location.identification, "ZWOLLE-001");
+    assertEquals("ZWOLLE-001", location.identification);
   }
 
   @Test
