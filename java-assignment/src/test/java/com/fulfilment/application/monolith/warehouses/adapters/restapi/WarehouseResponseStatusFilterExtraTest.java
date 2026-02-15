@@ -5,6 +5,7 @@ import jakarta.inject.Inject;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @QuarkusTest
 class WarehouseResponseStatusFilterExtraTest {
@@ -21,9 +22,12 @@ class WarehouseResponseStatusFilterExtraTest {
     void filter() {
         jakarta.ws.rs.container.ContainerResponseContext ctx = mock(jakarta.ws.rs.container.ContainerResponseContext.class);
         jakarta.ws.rs.container.ContainerRequestContext req = mock(jakarta.ws.rs.container.ContainerRequestContext.class);
+        jakarta.ws.rs.core.UriInfo uriInfo = mock(jakarta.ws.rs.core.UriInfo.class);
 
         when(ctx.getStatus()).thenReturn(200);
-        when(req.getUri()).thenReturn(java.net.URI.create("/warehouse"));
+        when(req.getUriInfo()).thenReturn(uriInfo);
+        when(uriInfo.getPath()).thenReturn("warehouse");
+        when(req.getMethod()).thenReturn("POST");
         when(ctx.getEntity()).thenReturn(new com.warehouse.api.beans.Warehouse());
 
         assertDoesNotThrow(() -> filter.filter(req, ctx));
