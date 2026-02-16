@@ -23,26 +23,9 @@ public class ReplaceWarehouseUseCase implements ReplaceWarehouseOperation {
 
   @Override
   public void replace(Warehouse newWarehouse) {
-    if (newWarehouse == null) {
-      throw new IllegalArgumentException("Warehouse data is required");
-    }
+    WarehouseValidation.validateForCreateOrReplace(newWarehouse);
     LOGGER.debugf(
         "replace use case started for businessUnitCode=%s", newWarehouse.businessUnitCode);
-    if (newWarehouse.businessUnitCode == null || newWarehouse.businessUnitCode.isBlank()) {
-      throw new IllegalArgumentException("Business unit code is required");
-    }
-    if (newWarehouse.location == null || newWarehouse.location.isBlank()) {
-      throw new IllegalArgumentException("Location is required");
-    }
-    if (newWarehouse.capacity == null || newWarehouse.capacity <= 0) {
-      throw new IllegalArgumentException("Capacity must be greater than 0");
-    }
-    if (newWarehouse.stock == null || newWarehouse.stock < 0) {
-      throw new IllegalArgumentException("Stock must be 0 or greater");
-    }
-    if (newWarehouse.stock > newWarehouse.capacity) {
-      throw new IllegalArgumentException("Stock cannot exceed capacity");
-    }
 
     Warehouse current = warehouseStore.findByBusinessUnitCode(newWarehouse.businessUnitCode);
     if (current == null || current.archivedAt != null) {

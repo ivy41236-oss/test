@@ -23,30 +23,8 @@ public class CreateWarehouseUseCase implements CreateWarehouseOperation {
 
   @Override
   public void create(Warehouse warehouse) {
-    if (warehouse == null) {
-      throw new IllegalArgumentException("Warehouse data is required");
-    }
+    WarehouseValidation.validateForCreateOrReplace(warehouse);
     LOGGER.debugf("create use case started for businessUnitCode=%s", warehouse.businessUnitCode);
-
-    if (warehouse.businessUnitCode == null || warehouse.businessUnitCode.isBlank()) {
-      throw new IllegalArgumentException("Business unit code is required");
-    }
-
-    if (warehouse.location == null || warehouse.location.isBlank()) {
-      throw new IllegalArgumentException("Location is required");
-    }
-
-    if (warehouse.capacity == null || warehouse.capacity <= 0) {
-      throw new IllegalArgumentException("Capacity must be greater than 0");
-    }
-
-    if (warehouse.stock == null || warehouse.stock < 0) {
-      throw new IllegalArgumentException("Stock must be 0 or greater");
-    }
-
-    if (warehouse.stock > warehouse.capacity) {
-      throw new IllegalArgumentException("Stock cannot exceed capacity");
-    }
 
     // Business Unit Code Verification
     if (warehouseStore.findByBusinessUnitCode(warehouse.businessUnitCode) != null) {

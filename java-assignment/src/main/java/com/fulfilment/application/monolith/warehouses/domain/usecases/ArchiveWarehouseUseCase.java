@@ -19,14 +19,10 @@ public class ArchiveWarehouseUseCase implements ArchiveWarehouseOperation {
 
   @Override
   public void archive(Warehouse warehouse) {
-    if (warehouse == null) {
-      throw new IllegalArgumentException("Warehouse data is required");
-    }
+    WarehouseValidation.requireWarehouseData(warehouse);
     LOGGER.debugf(
         "archive use case started for businessUnitCode=%s", warehouse.businessUnitCode);
-    if (warehouse.businessUnitCode == null || warehouse.businessUnitCode.isBlank()) {
-      throw new IllegalArgumentException("Business unit code is required");
-    }
+    WarehouseValidation.requireBusinessUnitCode(warehouse);
 
     Warehouse current = warehouseStore.findByBusinessUnitCode(warehouse.businessUnitCode);
     if (current == null || current.archivedAt != null) {
