@@ -28,27 +28,33 @@ public class ProductResource {
 
   @GET
   public List<Product> get() {
-    return productRepository.listAll(Sort.by("name"));
+    var products = productRepository.listAll(Sort.by("name"));
+    LOGGER.debugf("get returned %d products", products.size());
+    return products;
   }
 
   @GET
   @Path("{id}")
   public Product getSingle(Long id) {
+    LOGGER.debugf("getSingle requested for id=%d", id);
     Product entity = productRepository.findById(id);
     if (entity == null) {
       throw new WebApplicationException("Product with id of " + id + " does not exist.", 404);
     }
+    LOGGER.debugf("getSingle found product id=%d", id);
     return entity;
   }
 
   @POST
   @Transactional
   public Response create(Product product) {
+    LOGGER.debugf("create requested for name=%s", product == null ? null : product.name);
     if (product.id != null) {
       throw new WebApplicationException("Id was invalidly set on request.", 422);
     }
 
     productRepository.persist(product);
+    LOGGER.debugf("create completed with id=%d", product.id);
     return Response.ok(product).status(201).build();
   }
 
@@ -56,6 +62,7 @@ public class ProductResource {
   @Path("{id}")
   @Transactional
   public Product update(Long id, Product product) {
+    LOGGER.debugf("update requested for id=%d", id);
     if (product.name == null) {
       throw new WebApplicationException("Product Name was not set on request.", 422);
     }
@@ -72,6 +79,7 @@ public class ProductResource {
     entity.stock = product.stock;
 
     productRepository.persist(entity);
+    LOGGER.debugf("update completed for id=%d", id);
 
     return entity;
   }
@@ -80,11 +88,13 @@ public class ProductResource {
   @Path("{id}")
   @Transactional
   public Response delete(Long id) {
+    LOGGER.debugf("delete requested for id=%d", id);
     Product entity = productRepository.findById(id);
     if (entity == null) {
       throw new WebApplicationException("Product with id of " + id + " does not exist.", 404);
     }
     productRepository.delete(entity);
+    LOGGER.debugf("delete completed for id=%d", id);
     return Response.status(204).build();
   }
 }

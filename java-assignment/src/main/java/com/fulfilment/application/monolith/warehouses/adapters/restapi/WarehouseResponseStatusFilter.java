@@ -4,9 +4,12 @@ import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerResponseContext;
 import jakarta.ws.rs.container.ContainerResponseFilter;
 import jakarta.ws.rs.ext.Provider;
+import org.jboss.logging.Logger;
 
 @Provider
 public class WarehouseResponseStatusFilter implements ContainerResponseFilter {
+  private static final Logger LOGGER =
+      Logger.getLogger(WarehouseResponseStatusFilter.class.getName());
 
   @Override
   public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) {
@@ -26,6 +29,7 @@ public class WarehouseResponseStatusFilter implements ContainerResponseFilter {
         && "warehouse".equals(path)
         && responseContext.getStatus() == 200) {
       responseContext.setStatus(201);
+      LOGGER.debug("WarehouseResponseStatusFilter changed POST /warehouse status from 200 to 201");
     }
   }
 }

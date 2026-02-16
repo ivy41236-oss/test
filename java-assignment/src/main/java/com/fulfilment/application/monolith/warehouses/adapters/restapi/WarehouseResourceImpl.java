@@ -12,10 +12,12 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.WebApplicationException;
 import java.util.List;
+import org.jboss.logging.Logger;
 import org.jboss.resteasy.reactive.ResponseStatus;
 
 @RequestScoped
 public class WarehouseResourceImpl implements WarehouseResource {
+  private static final Logger LOGGER = Logger.getLogger(WarehouseResourceImpl.class.getName());
 
   @Inject private WarehouseRepository warehouseRepository;
   @Inject private CreateWarehouseUseCase createWarehouseUseCase;
@@ -24,16 +26,20 @@ public class WarehouseResourceImpl implements WarehouseResource {
 
   @Override
   public List<Warehouse> listAllWarehousesUnits() {
-    return warehouseRepository.getAll().stream().map(this::toWarehouseResponse).toList();
+    var warehouses = warehouseRepository.getAll().stream().map(this::toWarehouseResponse).toList();
+    LOGGER.debugf("listAllWarehousesUnits returned %d warehouse units", warehouses.size());
+    return warehouses;
   }
 
   @Override
   @Transactional
   @ResponseStatus(201)
   public Warehouse createANewWarehouseUnit(@NotNull Warehouse data) {
+    LOGGER.debugf("createANewWarehouseUnit requested for businessUnitCode=%s", data.getBusinessUnitCode());
     try {
       var domain = toDomainWarehouse(data);
       createWarehouseUseCase.create(domain);
+      LOGGER.debugf("createANewWarehouseUnit completed for businessUnitCode=%s", domain.businessUnitCode);
       return toWarehouseResponse(domain);
     } catch (IllegalArgumentException e) {
       throw new WebApplicationException(e.getMessage(), 400);
@@ -42,6 +48,7 @@ public class WarehouseResourceImpl implements WarehouseResource {
 
   @Override
   public Warehouse getAWarehouseUnitByID(String id) {
+    LOGGER.debugf("getAWarehouseUnitByID requested for id=%s", id);
     Long numericId;
     try {
       numericId = Long.parseLong(id);
@@ -53,12 +60,14 @@ public class WarehouseResourceImpl implements WarehouseResource {
     if (entity == null) {
       throw new WebApplicationException("Warehouse unit not found", 404);
     }
+    LOGGER.debugf("getAWarehouseUnitByID found id=%s", id);
     return toWarehouseResponse(entity.toWarehouse());
   }
 
   @Override
   @Transactional
   public void archiveAWarehouseUnitByID(String id) {
+    LOGGER.debugf("archiveAWarehouseUnitByID requested for id=%s", id);
     Long numericId;
     try {
       numericId = Long.parseLong(id);
@@ -74,6 +83,7 @@ public class WarehouseResourceImpl implements WarehouseResource {
     try {
       var domain = entity.toWarehouse();
       archiveWarehouseUseCase.archive(domain);
+      LOGGER.debugf("archiveAWarehouseUnitByID completed for id=%s", id);
     } catch (IllegalStateException e) {
       throw new WebApplicationException(e.getMessage(), 404);
     } catch (IllegalArgumentException e) {
@@ -85,10 +95,14 @@ public class WarehouseResourceImpl implements WarehouseResource {
   @Transactional
   public Warehouse replaceTheCurrentActiveWarehouse(
       String businessUnitCode, @NotNull Warehouse data) {
+    LOGGER.debugf(
+        "replaceTheCurrentActiveWarehouse requested for businessUnitCode=%s", businessUnitCode);
     try {
       var domain = toDomainWarehouse(data);
       domain.businessUnitCode = businessUnitCode;
       replaceWarehouseUseCase.replace(domain);
+      LOGGER.debugf(
+          "replaceTheCurrentActiveWarehouse completed for businessUnitCode=%s", businessUnitCode);
       return toWarehouseResponse(domain);
     } catch (IllegalStateException e) {
       throw new WebApplicationException(e.getMessage(), 404);

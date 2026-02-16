@@ -7,9 +7,11 @@ import com.fulfilment.application.monolith.warehouses.domain.ports.ReplaceWareho
 import com.fulfilment.application.monolith.warehouses.domain.ports.WarehouseStore;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.time.LocalDateTime;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class ReplaceWarehouseUseCase implements ReplaceWarehouseOperation {
+  private static final Logger LOGGER = Logger.getLogger(ReplaceWarehouseUseCase.class.getName());
 
   private final WarehouseStore warehouseStore;
   private final LocationResolver locationResolver;
@@ -24,6 +26,8 @@ public class ReplaceWarehouseUseCase implements ReplaceWarehouseOperation {
     if (newWarehouse == null) {
       throw new IllegalArgumentException("Warehouse data is required");
     }
+    LOGGER.debugf(
+        "replace use case started for businessUnitCode=%s", newWarehouse.businessUnitCode);
     if (newWarehouse.businessUnitCode == null || newWarehouse.businessUnitCode.isBlank()) {
       throw new IllegalArgumentException("Business unit code is required");
     }
@@ -89,5 +93,8 @@ public class ReplaceWarehouseUseCase implements ReplaceWarehouseOperation {
     newWarehouse.createdAt = LocalDateTime.now();
     newWarehouse.archivedAt = null;
     warehouseStore.create(newWarehouse);
+    LOGGER.debugf(
+        "replace use case completed; new warehouse created for businessUnitCode=%s",
+        newWarehouse.businessUnitCode);
   }
 }

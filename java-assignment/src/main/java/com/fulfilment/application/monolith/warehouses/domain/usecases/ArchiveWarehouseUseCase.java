@@ -5,9 +5,11 @@ import com.fulfilment.application.monolith.warehouses.domain.ports.ArchiveWareho
 import com.fulfilment.application.monolith.warehouses.domain.ports.WarehouseStore;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.time.LocalDateTime;
+import org.jboss.logging.Logger;
 
 @ApplicationScoped
 public class ArchiveWarehouseUseCase implements ArchiveWarehouseOperation {
+  private static final Logger LOGGER = Logger.getLogger(ArchiveWarehouseUseCase.class.getName());
 
   private final WarehouseStore warehouseStore;
 
@@ -20,6 +22,8 @@ public class ArchiveWarehouseUseCase implements ArchiveWarehouseOperation {
     if (warehouse == null) {
       throw new IllegalArgumentException("Warehouse data is required");
     }
+    LOGGER.debugf(
+        "archive use case started for businessUnitCode=%s", warehouse.businessUnitCode);
     if (warehouse.businessUnitCode == null || warehouse.businessUnitCode.isBlank()) {
       throw new IllegalArgumentException("Business unit code is required");
     }
@@ -31,5 +35,7 @@ public class ArchiveWarehouseUseCase implements ArchiveWarehouseOperation {
 
     current.archivedAt = LocalDateTime.now();
     warehouseStore.update(current);
+    LOGGER.debugf(
+        "archive use case completed for businessUnitCode=%s", warehouse.businessUnitCode);
   }
 }
