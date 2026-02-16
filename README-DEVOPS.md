@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project includes a comprehensive CI/CD pipeline using GitHub Actions, Docker, and Kubernetes.
+This project includes a basic CI/CD pipeline using GitHub Actions, Docker, and Kubernetes for interview assignment.
 
 ## CI/CD Pipeline Features
 

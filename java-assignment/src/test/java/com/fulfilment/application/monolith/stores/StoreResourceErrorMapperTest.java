@@ -2,6 +2,7 @@ package com.fulfilment.application.monolith.stores;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fulfilment.application.monolith.common.GlobalErrorMapper;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.Test;
@@ -12,8 +13,8 @@ class StoreResourceErrorMapperTest {
 
     @Test
     void toResponseWithWebApplicationException() {
-        StoreResource.ErrorMapper mapper = new StoreResource.ErrorMapper();
-        mapper.objectMapper = new ObjectMapper();
+        GlobalErrorMapper mapper = new GlobalErrorMapper();
+        mapper.setObjectMapper(new ObjectMapper());
 
         WebApplicationException ex = new WebApplicationException("Store not found", 404);
         Response response = mapper.toResponse(ex);
@@ -27,8 +28,8 @@ class StoreResourceErrorMapperTest {
 
     @Test
     void toResponseWithGenericException() {
-        StoreResource.ErrorMapper mapper = new StoreResource.ErrorMapper();
-        mapper.objectMapper = new ObjectMapper();
+        GlobalErrorMapper mapper = new GlobalErrorMapper();
+        mapper.setObjectMapper(new ObjectMapper());
 
         RuntimeException ex = new RuntimeException("Store error");
         Response response = mapper.toResponse(ex);
@@ -42,8 +43,8 @@ class StoreResourceErrorMapperTest {
 
     @Test
     void toResponseWithNullExceptionMessage() {
-        StoreResource.ErrorMapper mapper = new StoreResource.ErrorMapper();
-        mapper.objectMapper = new ObjectMapper();
+        GlobalErrorMapper mapper = new GlobalErrorMapper();
+        mapper.setObjectMapper(new ObjectMapper());
 
         WebApplicationException ex = new WebApplicationException((String) null);
         Response response = mapper.toResponse(ex);

@@ -26,9 +26,8 @@ Key operation: Warehouse "replacement" - archiving old warehouses while reusing 
 ### Solutions
 - Event-driven cost capture architecture
 - Weighted allocation based on usage metrics
-- Comprehensive cost entity structure (direct, indirect, variable, fixed costs)
+- Comprehensive cost entity structure (dire
 
----
 
 ## Scenario 2: Cost Optimization Strategies
 
