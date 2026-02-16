@@ -1,199 +1,101 @@
-# CI/CD Pipeline Setup
+# CI/CD Pipeline Guide
 
 ## Overview
 
-This project includes a basic CI/CD pipeline using GitHub Actions, Docker, and Kubernetes for interview assignment.
+This repository uses GitHub Actions for CI/CD.
+The current pipeline focuses on test/quality/security validation.
 
-## CI/CD Pipeline Features
+## Current Workflow Status
 
-### 🔍 **Testing & Quality Assurance**
-- **Unit Tests**: Automated test execution with Maven Surefire
-- **Code Coverage**: JaCoCo reports with 80% minimum threshold
-- **Security Scanning**: Trivy vulnerability scanner
-- **Build Verification**: Maven package validation
+- CI test and coverage checks are enabled.
+- Security scan (Trivy + SARIF upload) is enabled.
+- Deployment jobs are intentionally disabled.
+  - `deploy-staging`: `if: false`
+  - `deploy-production`: `if: false`
 
-### 🐳 **Containerization**
-- **Multi-stage Docker Build**: Optimized image size
-- **Docker Hub Integration**: Automated image pushing
-- **Health Checks**: Container health monitoring
+## Workflow File
 
-### ☸️ **Deployment**
-- **Kubernetes Deployment**: Auto-scaling with 2 replicas
-- **Environment Promotion**: Staging → Production workflow
-- **Secrets Management**: Secure credential handling
-- **Health Probes**: Liveness and readiness checks
-
-## Setup Instructions
-
-### 1. GitHub Secrets
-
-Add these secrets to your GitHub repository:
-
-```bash
-# Docker Hub
-DOCKER_USERNAME=your-docker-username
-DOCKER_PASSWORD=your-docker-password
-
-# Slack (optional)
-SLACK_WEBHOOK=your-slack-webhook-url
-```
-
-### 2. Local Development
-
-```bash
-# Build the application
-cd java-assignment
-./mvnw clean package
-
-# Build Docker image
-docker build -t fulfilment-app:latest .
-
-# Run locally
-docker run -p 8080:8080 fulfilment-app:latest
-```
-
-### 3. Kubernetes Deployment
-
-```bash
-# Apply to cluster
-kubectl apply -f k8s/deployment.yaml
-
-# Check status
-kubectl get pods -l app=fulfilment-app
-kubectl get services
-```
+- `.github/workflows/ci.yml`
 
 ## Pipeline Stages
 
-### 1. **Test Stage** (Every push/PR)
-- ✅ Code checkout
-- ✅ Java 17 setup
-- ✅ Maven dependency caching
-- ✅ Unit test execution
-- ✅ JaCoCo coverage report
-- ✅ Code coverage validation (80% threshold)
-- ✅ Application build
-- ✅ Artifact upload
+### 1) Test Job (`test`)
 
-### 2. **Security Scan** (After tests)
-- ✅ Trivy vulnerability scanning
-- ✅ SARIF report upload
-- ✅ Security findings in GitHub Security tab
+Runs on push/PR:
 
-### 3. **Deploy Staging** (Main branch only)
-- ✅ Docker Buildx setup
-- ✅ Docker Hub login
-- ✅ Multi-platform image build
-- ✅ Image tagging with Git SHA
-- ✅ Push to Docker Hub
+- Checkout code
+- Make Maven wrapper executable (`chmod +x java-assignment/mvnw`)
+- Set up JDK 17
+- Cache Maven dependencies
+- Run tests (`./mvnw clean test`)
+- Generate JaCoCo report
+- Upload coverage to Codecov
+- Run coverage gate via Maven verify (`./mvnw verify`)
+- Build package (`./mvnw clean package -DskipTests`)
+- Upload build artifact
 
-### 4. **Deploy Production** (Manual approval)
-- ✅ Production deployment
-- ✅ Slack notification
-- ✅ Rollback capability
+Coverage gate:
 
-## Monitoring & Observability
+- JaCoCo check configured in `java-assignment/pom.xml`
+- Bundle instruction coverage minimum: `0.80` (80%)
 
-### Health Endpoints
-- **Health Check**: `GET /q/health`
-- **Readiness**: `GET /q/health/ready`
-- **Metrics**: `GET /q/metrics`
+### 2) Security Scan Job (`security-scan`)
 
-### Logging
-- Application logs: Available via `kubectl logs`
-- Structured logging with correlation IDs
-- Log aggregation ready setup
+- Runs after test job
+- Executes Trivy filesystem scan
+- Uploads SARIF using `github/codeql-action/upload-sarif@v3`
+- Uses `security-events: write` permission
+- SARIF upload is skipped for fork PRs (permission-safe condition)
 
-### Alerts
-- Build failure notifications
-- Security vulnerability alerts
-- Deployment status updates
+### 3) Deploy Jobs (`deploy-staging`, `deploy-production`)
 
-## Performance Optimizations
+- Present in workflow, but currently disabled by `if: false`
+- No Docker push or production deployment is performed
 
-### Build Performance
-- Maven dependency caching
-- Docker layer caching
-- Parallel test execution
+## Required/Optional Secrets
 
-### Runtime Performance
-- Resource limits and requests
-- Health probe optimization
-- Graceful shutdown handling
+### Optional (currently not used because deploy jobs are disabled)
 
-## Security Features
+- `DOCKER_USERNAME`
+- `DOCKER_PASSWORD`
+- `SLACK_WEBHOOK`
 
-### Container Security
-- Minimal base image (UBI8)
-- Non-root user execution
-- Security scanning with Trivy
+If deployment jobs are re-enabled later, set these secrets first.
 
-### Application Security
-- Secret management
-- Environment variable protection
-- Dependency vulnerability scanning
+## Local Commands
+
+From `java-assignment` directory:
+
+```bash
+./mvnw clean test
+./mvnw verify
+./mvnw clean package -DskipTests
+```
 
 ## Troubleshooting
 
-### Common Issues
+### 1) `./mvnw: Permission denied` (Linux CI)
 
-**Build Failures**
+Ensure wrapper is executable:
+
 ```bash
-# Check Maven dependencies
-./mvnw dependency:tree
-
-# Clean build
-./mvnw clean compile
+chmod +x java-assignment/mvnw
 ```
 
-**Test Failures**
-```bash
-# Run specific test
-./mvnw test -Dtest=YourTestClass
+### 2) JaCoCo coverage check fails
 
-# Generate detailed report
-./mvnw surefire-report:report
+- Open report: `java-assignment/target/site/jacoco/index.html`
+- Add tests for uncovered classes
+- Re-run:
+
+```bash
+./mvnw clean verify
 ```
 
-**Deployment Issues**
-```bash
-# Check pod status
-kubectl describe pod <pod-name>
+### 3) SARIF upload permission error
 
-# Check logs
-kubectl logs <pod-name> --follow
+- Ensure CodeQL action version is `v3`
+- Ensure job permissions include:
+  - `contents: read`
+  - `security-events: write`
 
-# Check events
-kubectl get events
-```
-
-### Coverage Threshold Issues
-- Check JaCoCo report: `target/site/jacoco/index.html`
-- Add tests for uncovered code
-- Adjust threshold in `pom.xml` if needed
-
-## Best Practices
-
-### Code Quality
-- Maintain 80%+ code coverage
-- Address security findings promptly
-- Follow semantic versioning
-
-### Deployment
-- Use feature branches for development
-- Test thoroughly in staging
-- Monitor production deployments
-
-### Security
-- Regular dependency updates
-- Security scan review
-- Secret rotation
-
-## Future Enhancements
-
-- [ ] Integration tests with Testcontainers
-- [ ] Performance testing with K6
-- [ ] Blue-green deployments
-- [ ] Automated rollback on health check failures
-- [ ] Database migration automation
-- [ ] Monitoring with Prometheus/Grafana
