@@ -50,7 +50,7 @@ jobs:
     - name: Check code coverage threshold
       run: |
         cd java-assignment
-        ./mvnw jacoco:check
+        ./mvnw verify
         
     - name: Build application
       run: |
