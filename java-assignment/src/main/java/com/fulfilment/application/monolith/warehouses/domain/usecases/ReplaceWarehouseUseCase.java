@@ -60,8 +60,7 @@ public class ReplaceWarehouseUseCase implements ReplaceWarehouseOperation {
       throw new IllegalArgumentException("Invalid location");
     }
 
-    var activeWarehouses =
-        warehouseStore.getAll().stream().filter(w -> w.archivedAt == null).toList();
+    var activeWarehouses = warehouseStore.getAll();
     long activeCountAtLocationExcludingCurrent =
         activeWarehouses.stream()
             .filter(w -> newWarehouse.location.equals(w.location))

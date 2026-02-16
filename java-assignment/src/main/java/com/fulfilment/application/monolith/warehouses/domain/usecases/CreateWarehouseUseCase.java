@@ -57,8 +57,7 @@ public class CreateWarehouseUseCase implements CreateWarehouseOperation {
     }
 
     // Warehouse Creation Feasibility + Capacity constraints
-    var activeWarehouses =
-        warehouseStore.getAll().stream().filter(w -> w.archivedAt == null).toList();
+    var activeWarehouses = warehouseStore.getAll();
     long activeCountAtLocation =
         activeWarehouses.stream().filter(w -> warehouse.location.equals(w.location)).count();
     if (activeCountAtLocation >= location.maxNumberOfWarehouses) {

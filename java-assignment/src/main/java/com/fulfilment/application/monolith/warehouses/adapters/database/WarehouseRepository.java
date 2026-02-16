@@ -12,7 +12,7 @@ public class WarehouseRepository implements WarehouseStore, PanacheRepository<Db
 
   @Override
   public List<Warehouse> getAll() {
-    return this.listAll().stream().map(DbWarehouse::toWarehouse).toList();
+    return this.find("archivedAt is null").stream().map(DbWarehouse::toWarehouse).toList();
   }
 
   @Override
