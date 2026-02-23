@@ -16,7 +16,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import java.util.List;
-import org.jboss.logging.Logger;
 
 @Path("store")
 @ApplicationScoped
@@ -24,10 +23,7 @@ import org.jboss.logging.Logger;
 @Consumes("application/json")
 public class StoreResource {
 
-  @Inject LegacyStoreManagerGateway legacyStoreManagerGateway;
   @Inject Event<StoreTransactionEvent> storeTransactionEvent;
-
-  private static final Logger LOGGER = Logger.getLogger(StoreResource.class.getName());
 
   @GET
   public List<Store> get() {

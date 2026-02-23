@@ -4,14 +4,14 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.mockito.InjectMock;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 
 @QuarkusTest
 public class StoreResourceITTest {
 
-  @InjectMock LegacyStoreManagerGateway legacyStoreManagerGateway;
+  @Mock LegacyStoreManagerGateway legacyStoreManagerGateway;
 
   @Test
   public void create_shouldInvokeLegacyOnlyAfterTransactionCommit() {

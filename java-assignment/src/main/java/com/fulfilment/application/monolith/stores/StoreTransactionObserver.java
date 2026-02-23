@@ -12,6 +12,7 @@ public class StoreTransactionObserver {
   private static final Logger LOGGER = Logger.getLogger(StoreTransactionObserver.class.getName());
 
   @Inject LegacyStoreManagerGateway legacyStoreManagerGateway;
+  @Inject StoreSyncRetryService storeSyncRetryService;
 
   public void afterStoreTransaction(
       @Observes(during = TransactionPhase.AFTER_SUCCESS) StoreTransactionEvent event) {
@@ -20,13 +21,22 @@ public class StoreTransactionObserver {
       return;
     }
 
-    switch (event.type) {
-      case CREATED:
-        legacyStoreManagerGateway.createStoreOnLegacySystem(event.store);
-        break;
-      case UPDATED:
-        legacyStoreManagerGateway.updateStoreOnLegacySystem(event.store);
-        break;
+    try {
+      switch (event.type) {
+        case CREATED:
+          legacyStoreManagerGateway.createStoreOnLegacySystem(event.store);
+          break;
+        case UPDATED:
+          legacyStoreManagerGateway.updateStoreOnLegacySystem(event.store);
+          break;
+      }
+    } catch (Exception exception) {
+      LOGGER.error(
+          String.format(
+              "Immediate legacy sync failed after transaction commit. storeId=%s eventType=%s",
+              event.store.id, event.type),
+          exception);
+      storeSyncRetryService.enqueue(event, exception);
     }
   }
 }
